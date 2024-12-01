@@ -6,7 +6,18 @@ import kotlin.math.absoluteValue
 
 data class Day01Input(val listA: List<Int>, val listB: List<Int>)
 
-fun Day01Task01(input: Day01Input)
+fun File.readDay01(): Day01Input {
+    val listA: MutableList<Int> = mutableListOf()
+    val listB: MutableList<Int> = mutableListOf()
+    BufferedReader(this.reader()).forEachLine { it ->
+        val values: List<Int> = it.split("   ").map(String::toInt)
+        listA.add(values.first())
+        listB.add(values.last())
+    }
+   return Day01Input(listA, listB)
+}
+
+fun solveDay01Task01(input: Day01Input)
 {
     val listA: MutableList<Int> = input.listA.toMutableList()
     val listB: MutableList<Int> = input.listB.toMutableList()
@@ -17,7 +28,7 @@ fun Day01Task01(input: Day01Input)
     println(result)
 }
 
-fun Day01Task02(input: Day01Input)
+fun solveDay01Task02(input: Day01Input)
 {
     val listBCount: Map<Int, Int> = input.listB.groupingBy { it }.eachCount()
     val result: Int = input.listA.sumOf { it * listBCount.getOrDefault(it, 0) }
@@ -25,15 +36,7 @@ fun Day01Task02(input: Day01Input)
 }
 
 fun main() {
-    val bufferedReader: BufferedReader = File("day1.txt").bufferedReader()
-    val listA: MutableList<Int> = mutableListOf()
-    val listB: MutableList<Int> = mutableListOf()
-    bufferedReader.forEachLine { it ->
-        val values: List<Int> = it.split("   ").map(String::toInt)
-        listA.add(values.first())
-        listB.add(values.last())
-    }
-    val day01Input: Day01Input = Day01Input(listA, listB)
-    Day01Task01(day01Input)
-    Day01Task02(day01Input)
+    val day01Input: Day01Input = File("day1.txt").readDay01()
+    solveDay01Task01(day01Input)
+    solveDay01Task02(day01Input)
 }
