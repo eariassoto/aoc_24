@@ -5,13 +5,32 @@ import java.io.File
 import kotlin.math.absoluteValue
 
 fun main() {
-    val day02Input: List<Day02Report> = File("day2.txt").readDay02()
-    solveDay02Task01(day02Input)
-    solveDay02Task02(day02Input)
+    val day03Input: String = File("day3.txt").readDay03()
+    solveDay03Task01(day03Input)
+
+    //val day02Input: List<Day02Report> = File("day2.txt").readDay02()
+    //solveDay02Task01(day02Input)
+    //solveDay02Task02(day02Input)
 
     //val day01Input: Day01Input = File("day1.txt").readDay01()
     //solveDay01Task01(day01Input)
     //solveDay01Task02(day01Input)
+}
+
+fun File.readDay03(): String {
+    val result: String? = BufferedReader(this.reader()).readLine()
+    return result!!
+}
+
+fun solveDay03Task01(input: String)
+{
+    val mulRegex = Regex("mul\\((?<val1>\\d{1,3}),(?<val2>\\d{1,3})\\)")
+    val result = mulRegex.findAll(input).map {
+        it.groups["val1"]?.value!!.toInt() *
+        it.groups["val2"]?.value!!.toInt()
+    }.sum()
+
+    println(result)
 }
 
 @JvmInline
