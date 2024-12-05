@@ -5,9 +5,13 @@ import java.io.File
 import kotlin.math.absoluteValue
 
 fun main() {
-    val day03Input: String = File("day3.txt").readDay03()
+    val day04Input: Day04Input = File("day4.txt").readDay04()
+    //solveDay04Task01(day04Input)
+    solveDay04Task02(day04Input)
+
+    //val day03Input: String = File("day3.txt").readDay03()
     //solveDay03Task01(day03Input)
-    solveDay03Task02(day03Input)
+    //solveDay03Task02(day03Input)
 
     //val day02Input: List<Day02Report> = File("day2.txt").readDay02()
     //solveDay02Task01(day02Input)
@@ -16,6 +20,204 @@ fun main() {
     //val day01Input: Day01Input = File("day1.txt").readDay01()
     //solveDay01Task01(day01Input)
     //solveDay01Task02(day01Input)
+}
+
+data class Day04Input(val map: String, val columns: Int, val rows: Int)
+
+fun File.readDay04(): Day04Input {
+    var columns: Int = 0
+    var rows: Int = 0
+    var map: String = ""
+    BufferedReader(this.reader()).forEachLine {
+        map += it
+        rows += 1
+        columns = it.length
+    }
+    return Day04Input(map, columns, rows)
+}
+
+fun solveDay04Task01(input: Day04Input) {
+    val exesInMap: List<Int> = input.map.mapIndexedNotNull { index, c ->
+        if (c == 'X') index else null
+    }
+    val result: Int = exesInMap.sumOf {
+        isXmasHorizontal(it, input) +
+                isXmasHorizontalRev(it, input) +
+                isXmasVertical(it, input) +
+                isXmasVerticalRev(it, input) +
+                isXmasDiagonal(it, input)
+    }
+
+    println(result)
+}
+
+fun solveDay04Task02(input: Day04Input) {
+    val esesInMap: List<Int> = input.map.mapIndexedNotNull { index, c ->
+        if (c == 'S') index else null
+    }
+    // Return the index of all A for all diagonals
+    val result = esesInMap.flatMap {
+        isXmasDiagonal2(it, input)
+    }.groupingBy { it }.eachCount().filter { (_, count) -> count == 2 }.count()
+
+    println(result)
+}
+
+fun isXmasHorizontal(index: Int, input: Day04Input): Int {
+    return isXmasHorizontalInt(index, 0, "XMAS", input)
+}
+
+fun isXmasHorizontalRev(index: Int, input: Day04Input): Int {
+    val colAfterOffset = index % input.rows
+    if (colAfterOffset < 3) {
+        return 0
+    }
+    return isXmasHorizontalInt(index - 3, 0, "SAMX", input)
+}
+
+fun isXmasHorizontalInt(index: Int, pos: Int, lookup: String, input: Day04Input): Int {
+    if (index < 0 || index >= input.map.length) {
+        return 0
+    }
+    if (input.map[index] != lookup[pos]) {
+        return 0
+    }
+    // Got to end, found match
+    if (pos == 3) {
+        return 1
+    }
+    // Cannot move horizontally
+    if (index % input.rows == input.columns - 1) {
+        return 0
+    }
+    return isXmasHorizontalInt(index + 1, pos + 1, lookup, input)
+}
+
+fun isXmasVertical(index: Int, input: Day04Input): Int {
+    val actualRow = index / input.rows
+    if ((actualRow + 3) > input.rows) {
+        return 0
+    }
+    return isXmasVerticalInt(index, 0, "XMAS", input)
+}
+
+fun isXmasVerticalRev(index: Int, input: Day04Input): Int {
+    val actualRow = index / input.rows
+    if ((actualRow - 3) < 0) {
+        return 0
+    }
+    return isXmasVerticalInt(index - (3 * input.columns), 0, "SAMX", input)
+}
+
+fun isXmasVerticalInt(index: Int, pos: Int, lookup: String, input: Day04Input): Int {
+    val actualRow = index / input.rows
+    if (actualRow > input.rows) {
+        return 0
+    }
+    if (input.map[index] != lookup[pos]) {
+        return 0
+    }
+    // Got to end, found match
+    if (pos == 3) {
+        return 1
+    }
+    // Cannot move vertically
+    if ((actualRow + 1) > input.rows) {
+        return 0
+    }
+    return isXmasVerticalInt(index + input.columns, pos + 1, lookup, input)
+}
+
+fun isXmasDiagonal(index: Int, input: Day04Input): Int {
+    val actualRow = index / input.rows
+    val actualColumn = index % input.rows
+    var result = 0
+
+    //top right
+    if ((actualRow - 3) >= 0 && (actualColumn + 3) < input.columns) {
+        if (input.map[index] == 'X' &&
+            input.map[index + 1 - (1 * input.columns)] == 'M' &&
+            input.map[index + 2 - (2 * input.columns)] == 'A' &&
+            input.map[index + 3 - (3 * input.columns)] == 'S'
+        ) {
+            result += 1
+        }
+    }
+    //top left
+    if ((actualRow - 3) >= 0 && (actualColumn - 3) >= 0) {
+        if (input.map[index] == 'X' &&
+            input.map[index - 1 - (1 * input.columns)] == 'M' &&
+            input.map[index - 2 - (2 * input.columns)] == 'A' &&
+            input.map[index - 3 - (3 * input.columns)] == 'S'
+        ) {
+            result += 1
+        }
+    }
+    //bottom right
+    if ((actualRow + 3) < input.rows && (actualColumn + 3) < input.columns) {
+        if (input.map[index] == 'X' &&
+            input.map[index + 1 + (1 * input.columns)] == 'M' &&
+            input.map[index + 2 + (2 * input.columns)] == 'A' &&
+            input.map[index + 3 + (3 * input.columns)] == 'S'
+        ) {
+            result += 1
+        }
+    }
+    //bottom left
+    if ((actualRow + 3) < input.rows && (actualColumn - 3) >= 0) {
+        if (input.map[index] == 'X' &&
+            input.map[index - 1 + (1 * input.columns)] == 'M' &&
+            input.map[index - 2 + (2 * input.columns)] == 'A' &&
+            input.map[index - 3 + (3 * input.columns)] == 'S'
+        ) {
+            result += 1
+        }
+    }
+    return result
+}
+
+fun isXmasDiagonal2(index: Int, input: Day04Input): List<Int> {
+    val actualRow = index / input.rows
+    val actualColumn = index % input.rows
+    val result: MutableList<Int> = mutableListOf()
+
+    //top right
+    if ((actualRow - 2) >= 0 && (actualColumn + 2) < input.columns) {
+        if (input.map[index] == 'S' &&
+            input.map[index + 1 - (1 * input.columns)] == 'A' &&
+            input.map[index + 2 - (2 * input.columns)] == 'M'
+        ) {
+            result += index + 1 - (1 * input.columns)
+        }
+    }
+    //top left
+    if ((actualRow - 2) >= 0 && (actualColumn - 2) >= 0) {
+        if (input.map[index] == 'S' &&
+            input.map[index - 1 - (1 * input.columns)] == 'A' &&
+            input.map[index - 2 - (2 * input.columns)] == 'M'
+        ) {
+            result += index - 1 - (1 * input.columns)
+        }
+    }
+    //bottom right
+    if ((actualRow + 2) < input.rows && (actualColumn + 2) < input.columns) {
+        if (input.map[index] == 'S' &&
+            input.map[index + 1 + (1 * input.columns)] == 'A' &&
+            input.map[index + 2 + (2 * input.columns)] == 'M'
+        ) {
+            result += index + 1 + (1 * input.columns)
+        }
+    }
+    //bottom left
+    if ((actualRow + 2) < input.rows && (actualColumn - 2) >= 0) {
+        if (input.map[index] == 'S' &&
+            input.map[index - 1 + (1 * input.columns)] == 'A' &&
+            input.map[index - 2 + (2 * input.columns)] == 'M'
+        ) {
+            result += index - 1 + (1 * input.columns)
+        }
+    }
+    return result
 }
 
 fun File.readDay03(): String {
